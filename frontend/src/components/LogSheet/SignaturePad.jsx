@@ -111,7 +111,7 @@ export default function SignaturePad({ onSign }) {
           type="button"
           onClick={handleSave}
           disabled={isEmpty}
-          className="text-[11px] font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed px-3 py-1 rounded-md cursor-pointer"
+          className="text-[11px] font-semibold text-white bg-[#0d1d35] hover:bg-[#073370] disabled:opacity-40 disabled:cursor-not-allowed px-3 py-1 rounded-md cursor-pointer"
         >
           Save Signature
         </button>

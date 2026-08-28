@@ -30,7 +30,7 @@ function formatHoursToHHMM(decimalHours) {
   return `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
 }
 
-export default function LogSheetSVG({ log, signature, onSign, onClearSignature }) {
+export default function LogSheetSVG({ log, signature, onSign, onClearSignature, certified, onToggleCertify }) {
   if (!log) return null;
 
   const {
@@ -41,6 +41,7 @@ export default function LogSheetSVG({ log, signature, onSign, onClearSignature }
     main_office_address,
     truck_number,
     driver_name,
+    home_terminal_address,
     entries = [],
     totals = {},
     remarks = []
@@ -85,7 +86,7 @@ export default function LogSheetSVG({ log, signature, onSign, onClearSignature }
           <div className="flex gap-4 border border-slate-800 p-2.5 rounded-lg bg-slate-50">
             <div>
               <span className="text-[9px] uppercase font-medium text-slate-500 block">Date (Month/Day/Year)</span>
-              <span className="text-xs font-semibold font-mono text-blue-700">{date}</span>
+              <span className="text-xs font-semibold font-mono text-[#0d1d35]">{date}</span>
             </div>
             <div className="border-l border-slate-300 pl-3">
               <span className="text-[9px] uppercase font-medium text-slate-500 block">Total Miles Driving Today</span>
@@ -99,7 +100,11 @@ export default function LogSheetSVG({ log, signature, onSign, onClearSignature }
         </div>
 
         {/* Carrier Info Subheaders */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs mt-3 pt-2 border-t border-slate-200">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs mt-3 pt-2 border-t border-slate-200">
+          <div>
+            <span className="text-[10px] font-medium text-slate-500 block uppercase">Name of Driver:</span>
+            <span className="font-normal text-slate-900">{driver_name}</span>
+          </div>
           <div>
             <span className="text-[10px] font-medium text-slate-500 block uppercase">Name of Carrier:</span>
             <span className="font-normal text-slate-900">{carrier_name}</span>
@@ -320,12 +325,20 @@ export default function LogSheetSVG({ log, signature, onSign, onClearSignature }
             </div>
           )}
 
-          <span className="text-[9px] text-slate-500 block mt-1">I certify these entries are true and correct</span>
+          <label className="flex items-start gap-1.5 mt-1.5 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={!!certified}
+              onChange={(e) => onToggleCertify && onToggleCertify(e.target.checked)}
+              className="mt-0.5 h-3 w-3 accent-blue-700 cursor-pointer shrink-0"
+            />
+            <span className="text-[9px] text-slate-500 block">I certify these entries are true and correct</span>
+          </label>
         </div>
 
         <div>
           <span className="text-[10px] font-medium text-slate-500 block uppercase">Home Terminal Address</span>
-          <span className="font-normal text-slate-700">100 Logistics Pkwy, Chicago, IL 60601</span>
+          <span className="font-normal text-slate-700">{home_terminal_address}</span>
         </div>
       </div>
 

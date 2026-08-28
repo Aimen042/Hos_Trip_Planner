@@ -5,6 +5,7 @@ import { Calendar, ChevronLeft, ChevronRight, Printer, FileText } from 'lucide-r
 export default function LogSheetViewer({ dailyLogs }) {
   const [activeDayIndex, setActiveDayIndex] = useState(0);
   const [signatures, setSignatures] = useState({});
+  const [certifications, setCertifications] = useState({});
 
   if (!dailyLogs || dailyLogs.length === 0) return null;
 
@@ -24,6 +25,10 @@ export default function LogSheetViewer({ dailyLogs }) {
       delete next[activeLog.day_number];
       return next;
     });
+  };
+
+  const handleToggleCertify = (checked) => {
+    setCertifications(prev => ({ ...prev, [activeLog.day_number]: checked }));
   };
 
   return (
@@ -102,6 +107,8 @@ export default function LogSheetViewer({ dailyLogs }) {
         signature={signatures[activeLog.day_number]}
         onSign={handleSign}
         onClearSignature={handleClearSignature}
+        certified={certifications[activeLog.day_number]}
+        onToggleCertify={handleToggleCertify}
       />
 
     </div>

@@ -30,6 +30,16 @@ class PlanTripAPIView(APIView):
         dropoff_str = data["dropoff_location"]
         cycle_used_hrs = data["current_cycle_used_hrs"]
 
+        # Driver & carrier details for the FMCSA Daily Log Sheets.
+        # Fall back to sensible placeholders only if the user left them blank.
+        driver_details = {
+            "driver_name": data.get("driver_name") or "Driver Name Not Provided",
+            "carrier_name": data.get("carrier_name") or "Carrier Name Not Provided",
+            "main_office_address": data.get("main_office_address") or "Main Office Address Not Provided",
+            "truck_number": data.get("truck_number") or "N/A",
+            "home_terminal_address": data.get("home_terminal_address") or "Home Terminal Address Not Provided",
+        }
+
         try:
             # 1. Geocode locations
             curr_loc = geocode_location(curr_str)
@@ -45,7 +55,8 @@ class PlanTripAPIView(APIView):
                 pickup_loc=pickup_loc,
                 dropoff_loc=dropoff_loc,
                 current_cycle_used_hrs=cycle_used_hrs,
-                route_details=route_details
+                route_details=route_details,
+                driver_details=driver_details
             )
 
             plan_result = calculator.build_full_plan()

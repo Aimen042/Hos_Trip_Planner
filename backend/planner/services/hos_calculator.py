@@ -24,13 +24,23 @@ class HOSCalculator:
     and 24-hour Daily Log Sheets.
     """
 
-    def __init__(self, current_loc, pickup_loc, dropoff_loc, current_cycle_used_hrs, route_details, start_time=None):
+    def __init__(self, current_loc, pickup_loc, dropoff_loc, current_cycle_used_hrs, route_details,
+                 driver_details=None, start_time=None):
         self.current_loc = current_loc
         self.pickup_loc = pickup_loc
         self.dropoff_loc = dropoff_loc
         self.current_cycle_used_hrs = float(current_cycle_used_hrs)
         self.route_details = route_details
-        
+
+        # Driver & carrier details entered by the user; these get printed on
+        # every generated Daily Log Sheet instead of hardcoded placeholders.
+        driver_details = driver_details or {}
+        self.driver_name = driver_details.get("driver_name") or "Driver Name Not Provided"
+        self.carrier_name = driver_details.get("carrier_name") or "Carrier Name Not Provided"
+        self.main_office_address = driver_details.get("main_office_address") or "Main Office Address Not Provided"
+        self.truck_number = driver_details.get("truck_number") or "N/A"
+        self.home_terminal_address = driver_details.get("home_terminal_address") or "Home Terminal Address Not Provided"
+
         # Start at 06:00 AM on current date if start_time not provided
         if start_time is None:
             now = datetime.now()
@@ -379,10 +389,11 @@ class HOSCalculator:
                 "day_number": len(daily_logs) + 1,
                 "is_full_day": True,
                 "total_miles_today": round(miles_driven_today, 1),
-                "carrier_name": "Antigravity Express Logistics Inc.",
-                "main_office_address": "100 Logistics Pkwy, Chicago, IL 60601",
-                "truck_number": "TRK-9042 / TRL-8810",
-                "driver_name": "John Doe (CDL-A)",
+                "carrier_name": self.carrier_name,
+                "main_office_address": self.main_office_address,
+                "truck_number": self.truck_number,
+                "driver_name": self.driver_name,
+                "home_terminal_address": self.home_terminal_address,
                 "entries": day_entries,
                 "totals": totals,
                 "total_hours": sum(totals.values()),

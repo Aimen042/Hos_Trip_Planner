@@ -23,7 +23,7 @@ export default function App() {
     const startTime = Date.now();
 
     try {
-      const data = await planTrip(formData);
+      const data = await planTrip({ ...formData, ...driverDetails });
       
       // Ensure smooth animated truck loader displays for at least 2.2 seconds
       const elapsedTime = Date.now() - startTime;

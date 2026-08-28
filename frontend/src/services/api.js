@@ -8,7 +8,12 @@ export const planTrip = async (tripData) => {
       current_location: tripData.current_location,
       pickup_location: tripData.pickup_location,
       dropoff_location: tripData.dropoff_location,
-      current_cycle_used_hrs: parseFloat(tripData.current_cycle_used_hrs)
+      current_cycle_used_hrs: parseFloat(tripData.current_cycle_used_hrs),
+      driver_name: tripData.driver_name || '',
+      carrier_name: tripData.carrier_name || '',
+      main_office_address: tripData.main_office_address || '',
+      truck_number: tripData.truck_number || '',
+      home_terminal_address: tripData.home_terminal_address || ''
     });
     return response.data;
   } catch (error) {
