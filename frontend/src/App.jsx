@@ -1,13 +1,20 @@
 import React, { useState } from 'react';
+import DriverDetailsScreen from './components/DriverDetailsScreen';
 import WelcomeScreen from './components/WelcomeScreen';
 import TruckLoader from './components/TruckLoader';
 import ResultsScreen from './components/ResultsScreen';
 import { planTrip } from './services/api';
 
 export default function App() {
-  const [step, setStep] = useState('welcome'); // 'welcome' | 'loading' | 'results'
+  const [step, setStep] = useState('driver'); // 'driver' | 'welcome' | 'loading' | 'results'
+  const [driverDetails, setDriverDetails] = useState(null);
   const [tripPlan, setTripPlan] = useState(null);
   const [error, setError] = useState(null);
+
+  const handleDriverNext = (driverFormData) => {
+    setDriverDetails(driverFormData);
+    setStep('welcome');
+  };
 
   const handleTripSubmit = async (formData) => {
     setStep('loading');
@@ -34,7 +41,7 @@ export default function App() {
   };
 
   const handleReset = () => {
-    setStep('welcome');
+    setStep('driver');
     setError(null);
   };
 
@@ -52,7 +59,12 @@ export default function App() {
 
         <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
           
-          {/* Step 1: Welcome & Trip Setup Screen */}
+          {/* Step 1: Driver & Carrier Details Screen */}
+          {step === 'driver' && (
+            <DriverDetailsScreen onNext={handleDriverNext} initialData={driverDetails} />
+          )}
+
+          {/* Step 2: Welcome & Trip Setup Screen */}
           {step === 'welcome' && (
             <WelcomeScreen onSubmit={handleTripSubmit} error={error} />
           )}
