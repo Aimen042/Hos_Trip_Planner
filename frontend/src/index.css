@@ -70,30 +70,81 @@
     height: auto !important;
   }
 
-  /* Hide everything AND collapse its box height — visibility:hidden alone
-     keeps an element's height, which was the real cause of extra blank
-     pages (invisible-but-still-tall content forces extra pagination). */
-  body * {
-    visibility: hidden !important;
-    height: 0 !important;
-    overflow: hidden !important;
+  /* Hide every element on the page EXCEPT:
+       - .print-log-container itself
+       - its descendants (the log content)
+       - its ancestors (needed so the log can render inside the normal
+         document flow instead of being torn out with position:fixed/
+         absolute, which either clips tall content to one page or gets
+         clipped to nothing by ancestor overflow rules)
+     :has() lets us identify "ancestor of .print-log-container" directly,
+     so true siblings (other screens/widgets) get display:none — which
+     fully removes them from layout with no clipping side effects —
+     without touching the container's own ancestor chain at all. */
+  body :not(.print-log-container):not(.print-log-container *):not(:has(.print-log-container)) {
+    display: none !important;
   }
 
-  .print-log-container,
-  .print-log-container * {
-    visibility: visible !important;
-    height: auto !important;
+  /* Ancestors of the log container keep their normal display (so layout/
+     pagination flows naturally) but their own background/padding/margin/
+     borders are stripped so the app shell (dark navy background, page
+     padding, decorative blobs, etc.) doesn't bleed through around the
+     printed log sheet. */
+  body :has(.print-log-container) {
+    background: transparent !important;
+    background-image: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    min-height: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
     overflow: visible !important;
   }
 
   .print-log-container {
-    /* position:fixed anchors to the viewport itself, escaping any
-       position:relative ancestor (e.g. the dashboard blob wrapper in
-       App.jsx) so pagination is based on this element's own height only. */
-    position: fixed !important;
-    inset: 0 !important;
-    width: 100% !important;
     margin: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    max-width: none !important;
+    width: 100% !important;
+    overflow: visible !important;
+  }
+
+  /* Each day's log sheet starts on its own printed page when a trip spans
+     multiple days (all days are rendered for print, see LogSheetViewer). */
+  .log-day-page {
+    break-inside: avoid;
+  }
+
+  .log-day-page + .log-day-page {
+    page-break-before: always !important;
+    break-before: page !important;
+  }
+
+  /* Force the driver/carrier info row to stay 4-across on print, since some
+     browsers evaluate print media queries against a viewport width that
+     doesn't reliably match the `md:` breakpoint, causing it to collapse to
+     a single stacked column. */
+  .print-log-container .log-header-grid {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+
+  /* Avoid splitting the signature/certification footer across a page break. */
+  .print-log-container .log-signature-footer {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* Keep the signature <img> at its intended compact thumbnail size rather
+     than its full native canvas resolution (which can be large once scaled
+     by devicePixelRatio). */
+  .print-log-container .log-signature-img {
+    height: 48px !important;
+    width: auto !important;
+    max-width: 220px !important;
+    object-fit: contain !important;
   }
 
   @page {

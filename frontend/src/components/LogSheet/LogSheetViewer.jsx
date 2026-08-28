@@ -9,26 +9,24 @@ export default function LogSheetViewer({ dailyLogs }) {
 
   if (!dailyLogs || dailyLogs.length === 0) return null;
 
-  const activeLog = dailyLogs[activeDayIndex] || dailyLogs[0];
-
   const handlePrint = () => {
     window.print();
   };
 
-  const handleSign = (dataUrl) => {
-    setSignatures(prev => ({ ...prev, [activeLog.day_number]: dataUrl }));
+  const handleSign = (dayNumber) => (dataUrl) => {
+    setSignatures(prev => ({ ...prev, [dayNumber]: dataUrl }));
   };
 
-  const handleClearSignature = () => {
+  const handleClearSignature = (dayNumber) => () => {
     setSignatures(prev => {
       const next = { ...prev };
-      delete next[activeLog.day_number];
+      delete next[dayNumber];
       return next;
     });
   };
 
-  const handleToggleCertify = (checked) => {
-    setCertifications(prev => ({ ...prev, [activeLog.day_number]: checked }));
+  const handleToggleCertify = (dayNumber) => (checked) => {
+    setCertifications(prev => ({ ...prev, [dayNumber]: checked }));
   };
 
   return (
@@ -100,16 +98,27 @@ export default function LogSheetViewer({ dailyLogs }) {
         </div>
       </div>
 
-      {/* Printable Region — LogSheetSVG's root div already carries the
-          .print-log-container class that index.css targets for print isolation */}
-      <LogSheetSVG
-        log={activeLog}
-        signature={signatures[activeLog.day_number]}
-        onSign={handleSign}
-        onClearSignature={handleClearSignature}
-        certified={certifications[activeLog.day_number]}
-        onToggleCertify={handleToggleCertify}
-      />
+      {/* Printable Region — on screen only the active day's log sheet is
+          shown (matching the tab bar above), but for printing ALL days are
+          rendered so a multi-day trip's full log set gets printed, not just
+          the currently-selected tab. Each day's LogSheetSVG root div carries
+          the .print-log-container class that index.css targets for print
+          isolation, and .log-day-page forces a page break between days. */}
+      {dailyLogs.map((log, idx) => (
+        <div
+          key={log.day_number ?? idx}
+          className={`log-day-page ${idx === activeDayIndex ? 'block' : 'hidden print:block'}`}
+        >
+          <LogSheetSVG
+            log={log}
+            signature={signatures[log.day_number]}
+            onSign={handleSign(log.day_number)}
+            onClearSignature={handleClearSignature(log.day_number)}
+            certified={certifications[log.day_number]}
+            onToggleCertify={handleToggleCertify(log.day_number)}
+          />
+        </div>
+      ))}
 
     </div>
   );

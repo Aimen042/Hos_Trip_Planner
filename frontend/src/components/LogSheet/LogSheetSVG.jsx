@@ -86,7 +86,7 @@ export default function LogSheetSVG({ log, signature, onSign, onClearSignature, 
           <div className="flex gap-4 border border-slate-800 p-2.5 rounded-lg bg-slate-50">
             <div>
               <span className="text-[9px] uppercase font-medium text-slate-500 block">Date (Month/Day/Year)</span>
-              <span className="text-xs font-semibold font-mono text-[#0d1d35]">{date}</span>
+              <span className="text-xs font-semibold font-mono text-blue-700">{date}</span>
             </div>
             <div className="border-l border-slate-300 pl-3">
               <span className="text-[9px] uppercase font-medium text-slate-500 block">Total Miles Driving Today</span>
@@ -100,7 +100,7 @@ export default function LogSheetSVG({ log, signature, onSign, onClearSignature, 
         </div>
 
         {/* Carrier Info Subheaders */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs mt-3 pt-2 border-t border-slate-200">
+        <div className="log-header-grid grid grid-cols-1 md:grid-cols-4 gap-3 text-xs mt-3 pt-2 border-t border-slate-200">
           <div>
             <span className="text-[10px] font-medium text-slate-500 block uppercase">Name of Driver:</span>
             <span className="font-normal text-slate-900">{driver_name}</span>
@@ -304,13 +304,13 @@ export default function LogSheetSVG({ log, signature, onSign, onClearSignature, 
       </div>
 
       {/* Driver Signature Footer */}
-      <div className="mt-6 pt-4 border-t border-slate-300 flex flex-wrap justify-between items-end text-xs">
+      <div className="log-signature-footer mt-6 pt-4 border-t border-slate-300 flex flex-wrap justify-between items-end text-xs">
         <div className="w-64">
           <span className="text-[10px] font-medium text-slate-500 block uppercase mb-1">Driver Signature (Certification)</span>
 
           {signature ? (
             <div className="border-b-2 border-slate-800 pb-1">
-              <img src={signature} alt="Driver signature" className="h-12 object-contain" />
+              <img src={signature} alt="Driver signature" className="log-signature-img h-12 object-contain" />
               <button
                 type="button"
                 onClick={onClearSignature}
