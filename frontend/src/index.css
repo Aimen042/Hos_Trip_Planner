@@ -1,0 +1,103 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 400;
+    @apply bg-slate-100 text-slate-800 antialiased min-h-screen;
+  }
+}
+
+/* Custom #031636 Theme Colors */
+.bg-navy-900 {
+  background-color: #031636 !important;
+}
+
+.text-navy-900 {
+  color: #031636 !important;
+}
+
+.border-navy-900 {
+  border-color: #031636 !important;
+}
+
+.hover\:bg-navy-800:hover {
+  background-color: #052252 !important;
+}
+
+/* Truck Road Loader Animations */
+@keyframes truckDrive {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-3px); }
+  100% { transform: translateY(0px); }
+}
+
+@keyframes roadMove {
+  0% { background-position: 0 0; }
+  100% { background-position: -40px 0; }
+}
+
+.animate-truck-drive {
+  animation: truckDrive 0.6s ease-in-out infinite;
+}
+
+.animate-road-move {
+  background-image: repeating-linear-gradient(
+    90deg,
+    #94a3b8 0px,
+    #94a3b8 20px,
+    transparent 20px,
+    transparent 40px
+  );
+  animation: roadMove 0.8s linear infinite;
+}
+
+/* Custom Leaflet Styling */
+.leaflet-container {
+  font-family: 'Poppins', sans-serif !important;
+  background-color: #f8fafc !important;
+  border-radius: 1rem;
+}
+
+.custom-leaflet-marker {
+  background: transparent !important;
+  border: none !important;
+}
+
+/* Print Styles */
+@media print {
+  html, body {
+    height: auto !important;
+  }
+
+  /* Hide everything AND collapse its box height — visibility:hidden alone
+     keeps an element's height, which was the real cause of extra blank
+     pages (invisible-but-still-tall content forces extra pagination). */
+  body * {
+    visibility: hidden !important;
+    height: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .print-log-container,
+  .print-log-container * {
+    visibility: visible !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  .print-log-container {
+    /* position:fixed anchors to the viewport itself, escaping any
+       position:relative ancestor (e.g. the dashboard blob wrapper in
+       App.jsx) so pagination is based on this element's own height only. */
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100% !important;
+    margin: 0 !important;
+  }
+
+  @page {
+    size: landscape;
+    margin: 10mm;
+  }
+}
