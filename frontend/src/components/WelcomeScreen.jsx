@@ -4,10 +4,10 @@ import { PRESET_TRIPS } from '../mock/presetTrips';
 
 export default function WelcomeScreen({ onSubmit, error }) {
   const [formData, setFormData] = useState({
-    current_location: 'Chicago, IL',
-    pickup_location: 'St. Louis, MO',
-    dropoff_location: 'Dallas, TX',
-    current_cycle_used_hrs: '15.0'
+    current_location: '',
+    pickup_location: '',
+    dropoff_location: '',
+    current_cycle_used_hrs: ''
   });
 
   const [validationError, setValidationError] = useState('');
@@ -245,7 +245,8 @@ export default function WelcomeScreen({ onSubmit, error }) {
                       name="current_cycle_used_hrs"
                       value={formData.current_cycle_used_hrs}
                       onChange={handleChange}
-                      className="w-full bg-white border border-slate-300 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-900 font-mono focus:outline-none focus:ring-2 focus:ring-[#041637]"
+                      placeholder="e.g. 15.0"
+                      className="w-full bg-white border border-slate-300 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-900 font-mono placeholder:font-sans focus:outline-none focus:ring-2 focus:ring-[#041637]"
                     />
                   </div>
 

@@ -4,10 +4,10 @@ import { ShieldCheck, Clock, TrendingUp, MapPin, ChevronRight, CheckCircle2, Ale
 export default function DriverDetailsScreen({ onNext, initialData }) {
   const [formData, setFormData] = useState({
     driver_name: initialData?.driver_name || '',
-    carrier_name: initialData?.carrier_name || 'Antigravity Express Logistics Inc.',
-    main_office_address: initialData?.main_office_address || '100 Logistics Pkwy, Chicago, IL 60601',
-    truck_number: initialData?.truck_number || 'TRK-9042 / TRL-8810',
-    home_terminal_address: initialData?.home_terminal_address || '100 Logistics Pkwy, Chicago, IL 60601'
+    carrier_name: initialData?.carrier_name || '',
+    main_office_address: initialData?.main_office_address || '',
+    truck_number: initialData?.truck_number || '',
+    home_terminal_address: initialData?.home_terminal_address || ''
   });
 
   const [validationError, setValidationError] = useState('');
