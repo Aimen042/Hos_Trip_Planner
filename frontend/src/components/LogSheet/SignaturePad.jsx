@@ -18,15 +18,38 @@ export default function SignaturePad({ onSign }) {
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
-    // Scale for crisp lines on high-DPI screens
     const ratio = window.devicePixelRatio || 1;
-    canvas.width = canvas.offsetWidth * ratio;
-    canvas.height = canvas.offsetHeight * ratio;
-    ctx.scale(ratio, ratio);
-    ctx.lineWidth = 2;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.strokeStyle = '#0f172a';
+
+    // Re-sizes the canvas's internal pixel buffer to match its current
+    // on-screen size. Runs on mount AND whenever the canvas's rendered size
+    // changes (via ResizeObserver below) — not just once — because when
+    // multiple days' log sheets are all mounted at once (for printing) but
+    // only the active day is visible, an inactive day's canvas starts out
+    // with offsetWidth/offsetHeight of 0 (its parent is display:none). A
+    // one-time-on-mount sizing would permanently lock that canvas at 0x0,
+    // so switching to that tab later and signing would silently capture
+    // nothing. Re-measuring on every visibility/size change fixes that.
+    const resizeCanvas = () => {
+      const width = canvas.offsetWidth;
+      const height = canvas.offsetHeight;
+      if (width === 0 || height === 0) return; // still hidden — skip
+      // Setting width/height resets the canvas's pixel buffer AND its
+      // transform back to identity, so re-applying scale() here each time
+      // is safe and never compounds.
+      canvas.width = width * ratio;
+      canvas.height = height * ratio;
+      ctx.scale(ratio, ratio);
+      ctx.lineWidth = 2;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.strokeStyle = '#0f172a';
+    };
+
+    resizeCanvas();
+
+    const observer = new ResizeObserver(resizeCanvas);
+    observer.observe(canvas);
+    return () => observer.disconnect();
   }, []);
 
   const getPos = (e) => {
@@ -73,8 +96,54 @@ export default function SignaturePad({ onSign }) {
 
   const handleSave = () => {
     if (!hasDrawn.current) return;
-    const dataUrl = canvasRef.current.toDataURL('image/png');
-    onSign(dataUrl);
+
+    // Crop the exported PNG down to the actual bounding box of the drawn
+    // ink (plus a small margin) instead of exporting the whole (mostly
+    // blank) canvas. This is what makes the printed signature show only
+    // the pen strokes, tightly framed, rather than a large mostly-empty box.
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    const { width, height } = canvas;
+    const { data } = ctx.getImageData(0, 0, width, height);
+
+    let minX = width, minY = height, maxX = 0, maxY = 0;
+    let found = false;
+
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const alpha = data[(y * width + x) * 4 + 3];
+        if (alpha > 10) {
+          found = true;
+          if (x < minX) minX = x;
+          if (x > maxX) maxX = x;
+          if (y < minY) minY = y;
+          if (y > maxY) maxY = y;
+        }
+      }
+    }
+
+    if (!found) {
+      onSign(canvas.toDataURL('image/png'));
+      return;
+    }
+
+    const padding = 6;
+    minX = Math.max(0, minX - padding);
+    minY = Math.max(0, minY - padding);
+    maxX = Math.min(width, maxX + padding);
+    maxY = Math.min(height, maxY + padding);
+
+    const cropWidth = maxX - minX;
+    const cropHeight = maxY - minY;
+
+    const croppedCanvas = document.createElement('canvas');
+    croppedCanvas.width = cropWidth;
+    croppedCanvas.height = cropHeight;
+    croppedCanvas
+      .getContext('2d')
+      .drawImage(canvas, minX, minY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
+
+    onSign(croppedCanvas.toDataURL('image/png'));
   };
 
   return (
@@ -111,7 +180,7 @@ export default function SignaturePad({ onSign }) {
           type="button"
           onClick={handleSave}
           disabled={isEmpty}
-          className="text-[11px] font-semibold text-white bg-[#0d1d35] hover:bg-[#073370] disabled:opacity-40 disabled:cursor-not-allowed px-3 py-1 rounded-md cursor-pointer"
+          className="text-[11px] font-semibold text-white bg-[#0d1e35] hover:bg-[#08386b] disabled:opacity-40 disabled:cursor-not-allowed px-3 py-1 rounded-md cursor-pointer"
         >
           Save Signature
         </button>

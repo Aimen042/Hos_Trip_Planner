@@ -86,7 +86,7 @@ export default function LogSheetSVG({ log, signature, onSign, onClearSignature, 
           <div className="flex gap-4 border border-slate-800 p-2.5 rounded-lg bg-slate-50">
             <div>
               <span className="text-[9px] uppercase font-medium text-slate-500 block">Date (Month/Day/Year)</span>
-              <span className="text-xs font-semibold font-mono text-blue-700">{date}</span>
+              <span className="text-xs font-semibold font-mono text-[#0d1e35]">{date}</span>
             </div>
             <div className="border-l border-slate-300 pl-3">
               <span className="text-[9px] uppercase font-medium text-slate-500 block">Total Miles Driving Today</span>
