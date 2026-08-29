@@ -1,6 +1,10 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://127.0.0.1:8000/api';
+// In production (Vercel), set VITE_API_BASE_URL in the frontend project's
+// Environment Variables to your deployed backend URL, e.g.
+// https://your-backend-project.vercel.app/api
+// Falls back to localhost for local development.
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api';
 
 export const planTrip = async (tripData) => {
   try {
