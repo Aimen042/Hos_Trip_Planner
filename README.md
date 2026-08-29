@@ -8,7 +8,7 @@ Built with **Django REST Framework** (backend) and **React 19 + Vite + Tailwind 
 
 ## ✨ Features
 
-- **Driver & Carrier Profile screen** — capture driver name, carrier name, main office address, truck/trailer numbers, and home terminal address before planning a trip.
+- **Driver & Carrier Profile screen** — capture driver name, carrier name, main office address, truck/trailer numbers, and home terminal address before planning a trip. All fields appear as placeholders (not prefilled) and are validated before continuing.
 - **Trip Planning form** — starting location, pickup, dropoff, and current 70-hr/8-day cycle hours used, with quick-pick hour presets and a live cycle-progress ring.
 - **HOS Compliance Engine** (`hos_calculator.py`) — a pure-Python duty-status simulator that enforces, per 49 CFR § 395:
   - 11-hour driving limit
@@ -22,14 +22,15 @@ Built with **Django REST Framework** (backend) and **React 19 + Vite + Tailwind 
 - **Auto-generated Driver's Daily Log sheets** — one official-style 24-hour grid (Form FMCSA-395.8 style) per day of the trip, with:
   - Continuous step-function duty-status graph (Off Duty / Sleeper Berth / Driving / On Duty)
   - Auto-computed hour totals per status, reconciled to sum to 24.0
-  - Auto-filled driver/carrier/truck/home-terminal details from the Driver Profile screen
+  - Driver name, carrier, truck/trailer numbers, main office & home terminal addresses auto-filled from the Driver Profile screen (no more hardcoded values)
   - Remarks log (city/state + reason at every duty-status change)
   - On-screen **signature pad** to sign each day's log
-  - **"I certify these entries are true and correct"** certification checkbox
+  - **"I certify these entries are true and correct"** certification checkbox next to each day's signature
   - Print/export support (each day prints as its own clean page)
 - **Geocoding with graceful fallback** — tries OpenStreetMap Nominatim first, falls back to a built-in table of major US cities so the app keeps working offline/rate-limited.
 - **Routing with graceful fallback** — tries the public OSRM routing API first, falls back to a Haversine-distance estimate if OSRM is unreachable.
 - **Preset demo trips** (short / medium / cross-country) to quickly showcase single-day, 30-min-break, and multi-day + fuel-stop scenarios.
+- **Production-ready configuration** — environment-driven Django secret key, debug flag, allowed hosts, and CORS origins; optional Postgres support via `DATABASE_URL`; ready to deploy to Vercel out of the box.
 - Backend unit tests covering short trips, 30-minute break enforcement, and multi-day cycles.
 
 ---
@@ -52,11 +53,14 @@ Built with **Django REST Framework** (backend) and **React 19 + Vite + Tailwind 
 
 ```
 Hos_Trip_Planner-main/
+├── .gitignore
+├── README.md
 ├── backend/
 │   ├── manage.py
 │   ├── requirements.txt
+│   ├── vercel.json                   # Vercel function config (maxDuration)
 │   ├── hos_backend/                  # Django project settings
-│   │   ├── settings.py
+│   │   ├── settings.py               # Env-driven secret key, debug, hosts, CORS, DB
 │   │   ├── urls.py
 │   │   └── wsgi.py
 │   └── planner/                      # Main Django app
@@ -73,13 +77,14 @@ Hos_Trip_Planner-main/
     ├── package.json
     ├── vite.config.js
     ├── index.html
+    ├── .env.example                  # Template for VITE_API_BASE_URL
     ├── public/
     │   └── images/truck-hero.png
     └── src/
         ├── App.jsx                        # Top-level step router (driver → welcome → loading → results)
         ├── main.jsx
         ├── services/
-        │   └── api.js                     # Axios client for /api/plan-trip/
+        │   └── api.js                     # Axios client for /api/plan-trip/ (env-driven base URL)
         ├── mock/
         │   └── presetTrips.js             # Demo trip presets
         └── components/
@@ -92,7 +97,7 @@ Hos_Trip_Planner-main/
             ├── RouteMap.jsx               # Leaflet map with route + stop markers
             ├── HOSStatsWidget.jsx
             └── LogSheet/
-                ├── LogSheetViewer.jsx     # Day pagination + print controls
+                ├── LogSheetViewer.jsx     # Day pagination, print controls, signature/certify state
                 ├── LogSheetSVG.jsx        # The actual 24-hr FMCSA log sheet (SVG grid)
                 └── SignaturePad.jsx       # Canvas-based signature capture
 ```
@@ -114,9 +119,6 @@ python -m venv venv
 source venv/bin/activate        # Windows: venv\Scripts\activate
 
 pip install -r requirements.txt
-
-python manage.py migrate
-python manage.py runserver
 ```
 
 The API will be available at `http://127.0.0.1:8000/api/`.
@@ -125,13 +127,14 @@ The API will be available at `http://127.0.0.1:8000/api/`.
 
 ```bash
 cd frontend
+cp .env.example .env.local      # optional locally; defaults already point at localhost:8000
 npm install
 npm run dev
 ```
 
 The app will be available at `http://127.0.0.1:5173/`.
 
-> By default the frontend calls the backend at `http://127.0.0.1:8000/api` (see `frontend/src/services/api.js`). Update `API_BASE_URL` there if your backend runs elsewhere.
+> The frontend calls the backend at the URL in `VITE_API_BASE_URL` (see `frontend/.env.example`), falling back to `http://127.0.0.1:8000/api` if unset. Update it if your backend runs elsewhere.
 
 ### 3. Build for Production
 
@@ -140,16 +143,60 @@ cd frontend
 npm run build     # outputs to frontend/dist
 ```
 
+## 🔌 API Reference
+
+### `POST /api/plan-trip/`
+
+**Request body:**
+
+```json
+{
+  "current_location": "Chicago, IL",
+  "pickup_location": "St. Louis, MO",
+  "dropoff_location": "Dallas, TX",
+  "current_cycle_used_hrs": 15.0,
+
+  "driver_name": "John Doe",
+  "carrier_name": "Antigravity Express Logistics Inc.",
+  "main_office_address": "100 Logistics Pkwy, Chicago, IL 60601",
+  "truck_number": "TRK-9042 / TRL-8810",
+  "home_terminal_address": "100 Logistics Pkwy, Chicago, IL 60601"
+}
+```
+
+| Field | Type | Required | Notes |
+|---|---|---|---|
+| `current_location` | string | ✅ | Driver's starting location |
+| `pickup_location` | string | ✅ | Cargo pickup location |
+| `dropoff_location` | string | ✅ | Cargo dropoff location |
+| `current_cycle_used_hrs` | float | ✅ | 0.0 – 70.0 hours already used in the 70-hr/8-day cycle |
+| `driver_name` | string | optional | Printed on the daily log |
+| `carrier_name` | string | optional | Printed on the daily log |
+| `main_office_address` | string | optional | Printed on the daily log |
+| `truck_number` | string | optional | Printed on the daily log |
+| `home_terminal_address` | string | optional | Printed on the daily log |
+
+**Response:** a JSON object containing `inputs`, `summary` (total miles/hours/days), `route` (polyline + coordinates), `stops` (map markers for breaks/resets/fuel), `timeline` (full duty-status event list), and `daily_logs` (one FMCSA-style log per day, pre-filled with the driver/carrier details above).
 
 ---
 
+## 🧪 Running Tests
+
+```bash
+cd backend
+python manage.py test planner
+```
+
+Covers: short trips (no forced breaks), the 30-minute break rule after 8 hours of driving, and multi-day cycle/reset behavior.
+
+---
 
 ## 🧭 App Flow
 
 1. **Driver Details** — enter driver name, carrier, addresses, and truck/trailer numbers.
 2. **Trip Details** — enter current/pickup/dropoff locations and current cycle hours used.
 3. **Calculating** — animated loader while the backend geocodes, routes, and runs the HOS simulation.
-4. **Results** — trip summary, interactive route map, and per-day printable/signable Driver's Daily Log sheets.
+4. **Results** — trip summary, interactive route map, and per-day Driver's Daily Log sheets you can sign, certify, and print.
 
 ---
 
