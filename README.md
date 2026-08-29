@@ -4,6 +4,8 @@ A full-stack **FMCSA Hours-of-Service (HOS) compliance trip planner** for truck 
 
 Built with **Django REST Framework** (backend) and **React 19 + Vite + Tailwind CSS v4** (frontend).
 
+**🔗 Live Demo:** [https://hos-trip-planner-pl78.vercel.app](https://hos-trip-planner-pl78.vercel.app)
+
 ---
 
 ## ✨ Features
